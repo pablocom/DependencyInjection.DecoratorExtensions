@@ -288,16 +288,11 @@ public sealed class WhenDecoratingServices
         }
     }
 
-    public class Decorator : IDecoratedService
+    public class Decorator(IDecoratedService innerDecoratedService) : IDecoratedService
     {
         public int ReceivedCallsCount { get; private set; }
-        public IDecoratedService InnerDecoratedService { get; }
+        public IDecoratedService InnerDecoratedService { get; } = innerDecoratedService;
 
-        public Decorator(IDecoratedService innerDecoratedService)
-        {
-            InnerDecoratedService = innerDecoratedService;
-        }
-        
         public void Execute()
         {
             ReceivedCallsCount++;
@@ -339,27 +334,23 @@ public sealed class WhenDecoratingServices
         public void Handle(MyCommandSubType command) { }
     }
     
-    public sealed class CommandHandlerDecorator<TEvent> : ICommandHandler<TEvent> where TEvent : ICommand
+    public sealed class CommandHandlerDecorator<TEvent>(ICommandHandler<TEvent> innerHandler) : ICommandHandler<TEvent>
+        where TEvent : ICommand
     {
-        public ICommandHandler<TEvent> InnerHandler { get; }
+        public ICommandHandler<TEvent> InnerHandler { get; } = innerHandler;
         public int ReceivedCallsCount { get; private set; }
 
-        public CommandHandlerDecorator(ICommandHandler<TEvent> innerHandler)
-        {
-            InnerHandler = innerHandler;
-        }
-        
         public void Handle(TEvent command)
         {
             ReceivedCallsCount++;
             InnerHandler.Handle(command);
         }
     }
-    public sealed class CommandSubTypeHandlerDecorator<TCommand> : ICommandHandler<TCommand> where TCommand : ICommandSubType
+    public sealed class CommandSubTypeHandlerDecorator<TCommand>(ICommandHandler<TCommand> innerHandler)
+        : ICommandHandler<TCommand>
+        where TCommand : ICommandSubType
     {
-        public ICommandHandler<TCommand> InnerHandler { get; }
-
-        public CommandSubTypeHandlerDecorator(ICommandHandler<TCommand> innerHandler) => InnerHandler = innerHandler;
+        public ICommandHandler<TCommand> InnerHandler { get; } = innerHandler;
 
         public void Handle(TCommand command) => InnerHandler.Handle(command);
     }
