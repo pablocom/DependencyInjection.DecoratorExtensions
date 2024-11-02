@@ -1,14 +1,9 @@
 namespace DependencyInjection.DecoratorExtensions.DecorationStrategies;
 
-internal abstract class DecorationStrategy
+internal abstract class DecorationStrategy(Type decoratedType)
 {
-    public Type TargetDecoratedType { get; }
+    public Type TargetDecoratedType { get; } = decoratedType;
 
-    protected DecorationStrategy(Type decoratedType)
-    {
-        TargetDecoratedType = decoratedType;
-    }
-    
     public abstract bool CanDecorate(Type type);
     public abstract Func<IServiceProvider, object> CreateImplementationFactory(DecoratedTypeProxy decoratedType);
 }

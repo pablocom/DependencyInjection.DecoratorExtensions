@@ -1,12 +1,7 @@
 namespace DependencyInjection.DecoratorExtensions;
 
-public class DecorationException : InvalidOperationException
+public class DecorationException(Type serviceType)
+    : InvalidOperationException($"Could not find any registered service to decorate for type '{serviceType.FullName}'.")
 {
-    public Type ServiceType { get; }
-    
-    public DecorationException(Type serviceType) 
-        : base($"Could not find any registered service to decorate for type '{serviceType.FullName}'.")
-    {
-        ServiceType = serviceType;
-    }
+    public Type ServiceType { get; } = serviceType;
 }

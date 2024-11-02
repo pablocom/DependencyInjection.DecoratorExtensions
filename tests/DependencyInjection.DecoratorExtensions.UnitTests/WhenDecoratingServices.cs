@@ -124,7 +124,7 @@ public sealed class WhenDecoratingServices
             services => services.Decorate<IDecoratedService, Decorator>((decorated, _) => new Decorator(decorated)),
             services => services.Decorate<IDecoratedService>((decorated, _) => new Decorator(decorated)),
             services => services.Decorate((IDecoratedService decorated, IServiceProvider _) => new Decorator(decorated)),
-            services => services.Decorate<IDecoratedService>((decorated, _) => new Decorator((IDecoratedService)decorated)),
+            services => services.Decorate<IDecoratedService>((decorated, _) => new Decorator(decorated)),
             services => services.Decorate((IDecoratedService decorated) => new Decorator(decorated)),
         };
 
@@ -272,8 +272,8 @@ public sealed class WhenDecoratingServices
         
         return services.BuildServiceProvider();
     }
-    
-    public interface IDecoratedService
+
+    private interface IDecoratedService
     {
         void Execute();
     }
@@ -288,34 +288,29 @@ public sealed class WhenDecoratingServices
         }
     }
 
-    public class Decorator : IDecoratedService
+    private class Decorator(IDecoratedService innerDecoratedService) : IDecoratedService
     {
         public int ReceivedCallsCount { get; private set; }
-        public IDecoratedService InnerDecoratedService { get; }
+        public IDecoratedService InnerDecoratedService { get; } = innerDecoratedService;
 
-        public Decorator(IDecoratedService innerDecoratedService)
-        {
-            InnerDecoratedService = innerDecoratedService;
-        }
-        
         public void Execute()
         {
             ReceivedCallsCount++;
             InnerDecoratedService.Execute();
         }
     }
-    
-    public interface ICommand;
+
+    private interface ICommand;
 
     public sealed class MyCommand : ICommand;
     
     public sealed class MyOtherCommand : ICommand;
     
-    public interface ICommandSubType : ICommand;
-    
+    private interface ICommandSubType : ICommand;
+
     public sealed class MyCommandSubType : ICommandSubType;
     
-    public interface ICommandHandler<in TCommand> where TCommand : ICommand
+    private interface ICommandHandler<in TCommand> where TCommand : ICommand
     {
         void Handle(TCommand command);
     }
@@ -338,28 +333,25 @@ public sealed class WhenDecoratingServices
     {
         public void Handle(MyCommandSubType command) { }
     }
-    
-    public sealed class CommandHandlerDecorator<TEvent> : ICommandHandler<TEvent> where TEvent : ICommand
+
+    private sealed class CommandHandlerDecorator<TEvent>(ICommandHandler<TEvent> innerHandler) : ICommandHandler<TEvent>
+        where TEvent : ICommand
     {
-        public ICommandHandler<TEvent> InnerHandler { get; }
+        public ICommandHandler<TEvent> InnerHandler { get; } = innerHandler;
         public int ReceivedCallsCount { get; private set; }
 
-        public CommandHandlerDecorator(ICommandHandler<TEvent> innerHandler)
-        {
-            InnerHandler = innerHandler;
-        }
-        
         public void Handle(TEvent command)
         {
             ReceivedCallsCount++;
             InnerHandler.Handle(command);
         }
     }
-    public sealed class CommandSubTypeHandlerDecorator<TCommand> : ICommandHandler<TCommand> where TCommand : ICommandSubType
-    {
-        public ICommandHandler<TCommand> InnerHandler { get; }
 
-        public CommandSubTypeHandlerDecorator(ICommandHandler<TCommand> innerHandler) => InnerHandler = innerHandler;
+    private sealed class CommandSubTypeHandlerDecorator<TCommand>(ICommandHandler<TCommand> innerHandler)
+        : ICommandHandler<TCommand>
+        where TCommand : ICommandSubType
+    {
+        public ICommandHandler<TCommand> InnerHandler { get; } = innerHandler;
 
         public void Handle(TCommand command) => InnerHandler.Handle(command);
     }
