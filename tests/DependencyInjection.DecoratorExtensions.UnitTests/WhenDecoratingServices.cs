@@ -272,8 +272,8 @@ public sealed class WhenDecoratingServices
         
         return services.BuildServiceProvider();
     }
-    
-    public interface IDecoratedService
+
+    private interface IDecoratedService
     {
         void Execute();
     }
@@ -288,7 +288,7 @@ public sealed class WhenDecoratingServices
         }
     }
 
-    public class Decorator(IDecoratedService innerDecoratedService) : IDecoratedService
+    private class Decorator(IDecoratedService innerDecoratedService) : IDecoratedService
     {
         public int ReceivedCallsCount { get; private set; }
         public IDecoratedService InnerDecoratedService { get; } = innerDecoratedService;
@@ -299,18 +299,18 @@ public sealed class WhenDecoratingServices
             InnerDecoratedService.Execute();
         }
     }
-    
-    public interface ICommand;
+
+    private interface ICommand;
 
     public sealed class MyCommand : ICommand;
     
     public sealed class MyOtherCommand : ICommand;
     
-    public interface ICommandSubType : ICommand;
-    
+    private interface ICommandSubType : ICommand;
+
     public sealed class MyCommandSubType : ICommandSubType;
     
-    public interface ICommandHandler<in TCommand> where TCommand : ICommand
+    private interface ICommandHandler<in TCommand> where TCommand : ICommand
     {
         void Handle(TCommand command);
     }
@@ -333,8 +333,8 @@ public sealed class WhenDecoratingServices
     {
         public void Handle(MyCommandSubType command) { }
     }
-    
-    public sealed class CommandHandlerDecorator<TEvent>(ICommandHandler<TEvent> innerHandler) : ICommandHandler<TEvent>
+
+    private sealed class CommandHandlerDecorator<TEvent>(ICommandHandler<TEvent> innerHandler) : ICommandHandler<TEvent>
         where TEvent : ICommand
     {
         public ICommandHandler<TEvent> InnerHandler { get; } = innerHandler;
@@ -346,7 +346,8 @@ public sealed class WhenDecoratingServices
             InnerHandler.Handle(command);
         }
     }
-    public sealed class CommandSubTypeHandlerDecorator<TCommand>(ICommandHandler<TCommand> innerHandler)
+
+    private sealed class CommandSubTypeHandlerDecorator<TCommand>(ICommandHandler<TCommand> innerHandler)
         : ICommandHandler<TCommand>
         where TCommand : ICommandSubType
     {
